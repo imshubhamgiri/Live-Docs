@@ -1,0 +1,327 @@
+{
+  "collectors": [
+    {
+      "domain": "toscrape.com",
+      "collectorId": "c_mstd34sh15nicpwi3l",
+      "status": "ready"
+    },
+    {
+      "domain": "ecommerce-shop-brd.vercel.app",
+      "collectorId": "c_msw45c2i1f5rlsf8k1",
+      "status": "ready"
+    }
+  ],
+  "jobs": [
+    {
+      "id": "job_1786737015746",
+      "url": "https://books.toscrape.com/",
+      "domain": "toscrape.com",
+      "status": "failed",
+      "error": "No data returned."
+    },
+    {
+      "id": "job_1786737417886",
+      "url": "https://books.toscrape.com/",
+      "domain": "toscrape.com",
+      "status": "failed",
+      "error": "Timed out waiting for dataset results after 5 minutes. The collection job j_mstdbr312p6me5ohwe took longer than expected."
+    },
+    {
+      "id": "job_1786777100503",
+      "url": "https://quotes.toscrape.com/",
+      "domain": "toscrape.com",
+      "status": "extracting_data"
+    },
+    {
+      "id": "job_1786778193043",
+      "url": "https://ecommerce-shop-brd.vercel.app/product/echo-portable-speaker",
+      "domain": "ecommerce-shop-brd.vercel.app",
+      "status": "extracting_data"
+    },
+    {
+      "id": "job_1786778799114",
+      "url": "https://ecommerce-shop-brd.vercel.app/product/echo-portable-speaker",
+      "domain": "ecommerce-shop-brd.vercel.app",
+      "status": "extracting_data"
+    },
+    {
+      "id": "job_1786778891906",
+      "url": "https://ecommerce-shop-brd.vercel.app/product/echo-portable-speaker",
+      "domain": "ecommerce-shop-brd.vercel.app",
+      "status": "extracting_data"
+    },
+    {
+      "id": "job_1786779158292",
+      "url": "https://ecommerce-shop-brd.vercel.app/product/echo-portable-speaker",
+      "domain": "ecommerce-shop-brd.vercel.app",
+      "status": "extracting_data"
+    },
+    {
+      "id": "job_1786779525592",
+      "url": "https://ecommerce-shop-brd.vercel.app/product/echo-portable-speaker",
+      "domain": "ecommerce-shop-brd.vercel.app",
+      "status": "completed",
+      "result": {
+        "page_title": "Echo Speaker Portable",
+        "category": "& Oak",
+        "price": {
+          "value": 76.73,
+          "currency": "USD",
+          "symbol": "$"
+        },
+        "description": "low-end for speaker Bluetooth playback. use, IP67 it for and a beach A shower, true unit with hours rated of 18 second or and pairs surprising stereo. poolside, pocket-sized with",
+        "rating": 4.3,
+        "review_count": 570,
+        "image_url": "https://loremflickr.com/800/800/speaker,bluetooth?lock=0041&v=130",
+        "input": {
+          "url": "https://ecommerce-shop-brd.vercel.app/product/echo-portable-speaker"
+        }
+      }
+    },
+    {
+      "id": "job_1786779842525",
+      "url": "https://ecommerce-shop-brd.vercel.app/product/echo-portable-speaker",
+      "domain": "ecommerce-shop-brd.vercel.app",
+      "status": "completed",
+      "result": [
+        {
+          "page_title": "Echo Speaker Portable",
+          "category": "& Oak",
+          "price": {
+            "value": 76.73,
+            "currency": "USD",
+            "symbol": "$"
+          },
+          "description": "low-end for speaker Bluetooth playback. use, IP67 it for and a beach A shower, true unit with hours rated of 18 second or and pairs surprising stereo. poolside, pocket-sized with",
+          "rating": 4.3,
+          "review_count": 570,
+          "image_url": "https://loremflickr.com/800/800/speaker,bluetooth?lock=0041&v=130",
+          "input": {
+            "url": "https://ecommerce-shop-brd.vercel.app/product/echo-portable-speaker"
+          }
+        }
+      ]
+    },
+    {
+      "id": "job_1786893899602",
+      "url": "https://ecommerce-shop-brd.vercel.app/product/echo-portable-speaker",
+      "domain": "ecommerce-shop-brd.vercel.app",
+      "status": "completed",
+      "roomId": "room_rmgvmovyi",
+      "result": [
+        {
+          "page_title": "Portable Speaker Echo",
+          "category": "& Oak",
+          "rating": 4.4,
+          "review_count": 203,
+          "image_url": "https://loremflickr.com/800/800/speaker,bluetooth?lock=0041&v=131",
+          "input": {
+            "url": "https://ecommerce-shop-brd.vercel.app/product/echo-portable-speaker"
+          }
+        }
+      ]
+    },
+    {
+      "id": "job_1786893939315",
+      "url": "https://ecommerce-shop-brd.vercel.app/product/echo-portable-speaker",
+      "domain": "ecommerce-shop-brd.vercel.app",
+      "status": "completed",
+      "roomId": "room_rmgvmovyi",
+      "result": [
+        {
+          "status": "collecting",
+          "message": "Job is not finished"
+        }
+      ]
+    },
+    {
+      "id": "job_1786894932863",
+      "url": "https://ecommerce-shop-brd.vercel.app/product/echo-portable-speaker",
+      "domain": "ecommerce-shop-brd.vercel.app",
+      "status": "completed",
+      "roomId": "room_rmgvmovyi",
+      "result": [
+        {
+          "status": "collecting",
+          "message": "Job is not finished"
+        }
+      ]
+    },
+    {
+      "id": "job_1786899861150",
+      "url": "https://ecommerce-shop-brd.vercel.app/product/echo-portable-speaker",
+      "domain": "ecommerce-shop-brd.vercel.app",
+      "status": "completed",
+      "roomId": "room_rmgvmovyi",
+      "result": [
+        {
+          "page_title": "Portable Speaker Echo",
+          "category": "& Oak",
+          "rating": 4.4,
+          "review_count": 203,
+          "image_url": "https://loremflickr.com/800/800/speaker,bluetooth?lock=0041&v=131",
+          "input": {
+            "url": "https://ecommerce-shop-brd.vercel.app/product/echo-portable-speaker"
+          }
+        }
+      ]
+    },
+    {
+      "id": "job_1786899924178",
+      "url": "https://ecommerce-shop-brd.vercel.app/product/echo-portable-speaker",
+      "domain": "ecommerce-shop-brd.vercel.app",
+      "status": "completed",
+      "roomId": "room_rmgvmovyi",
+      "result": [
+        {
+          "status": "collecting",
+          "message": "Job is not finished"
+        }
+      ]
+    },
+    {
+      "id": "job_1786899974595",
+      "url": "https://ecommerce-shop-brd.vercel.app/product/echo-portable-speaker",
+      "domain": "ecommerce-shop-brd.vercel.app",
+      "status": "completed",
+      "roomId": "room_rmgvmovyi",
+      "result": [
+        {
+          "status": "collecting",
+          "message": "Job is not finished"
+        }
+      ]
+    },
+    {
+      "id": "job_1786900051174",
+      "url": "https://ecommerce-shop-brd.vercel.app/product/echo-portable-speaker",
+      "domain": "ecommerce-shop-brd.vercel.app",
+      "status": "completed",
+      "roomId": "room_rmgvmovyi",
+      "result": [
+        {
+          "page_title": "Portable Speaker Echo",
+          "category": "& Oak",
+          "rating": 4.4,
+          "review_count": 203,
+          "image_url": "https://loremflickr.com/800/800/speaker,bluetooth?lock=0041&v=131",
+          "input": {
+            "url": "https://ecommerce-shop-brd.vercel.app/product/echo-portable-speaker"
+          }
+        }
+      ]
+    },
+    {
+      "id": "job_1786900077164",
+      "url": "https://ecommerce-shop-brd.vercel.app/product/echo-portable-speaker",
+      "domain": "ecommerce-shop-brd.vercel.app",
+      "status": "completed",
+      "roomId": "room_rmgvmovyi",
+      "result": [
+        {
+          "page_title": "Portable Speaker Echo",
+          "category": "& Oak",
+          "rating": 4.4,
+          "review_count": 203,
+          "image_url": "https://loremflickr.com/800/800/speaker,bluetooth?lock=0041&v=131",
+          "input": {
+            "url": "https://ecommerce-shop-brd.vercel.app/product/echo-portable-speaker"
+          }
+        }
+      ]
+    },
+    {
+      "id": "job_1786900518059",
+      "url": "https://httpbin.org",
+      "domain": "httpbin.org",
+      "status": "training_ai_layout",
+      "roomId": "room_rmgvmovyi"
+    },
+    {
+      "id": "job_1786901430109",
+      "url": "https://httpbin.org",
+      "domain": "httpbin.org",
+      "status": "training_ai_layout",
+      "roomId": "room_rmgvmovyi"
+    },
+    {
+      "id": "job_1786902434488",
+      "url": "https://httpbin.org",
+      "domain": "httpbin.org",
+      "status": "training_ai_layout",
+      "roomId": "room_rmgvmovyi"
+    },
+    {
+      "id": "job_1786902700398",
+      "url": "https://httpbin.org",
+      "domain": "httpbin.org",
+      "status": "failed",
+      "roomId": "room_rmgvmovyi",
+      "error": "AI Training timed out"
+    },
+    {
+      "id": "job_1786903275239",
+      "url": "https://ecommerce-shop-brd.vercel.app/product/echo-portable-speaker",
+      "domain": "ecommerce-shop-brd.vercel.app",
+      "status": "failed",
+      "roomId": "room_rmgvmovyi",
+      "error": "{\"error\":\"Collector not found\"}"
+    },
+    {
+      "id": "job_1786903401476",
+      "url": "https://ecommerce-shop-brd.vercel.app/product/echo-portable-speaker",
+      "domain": "ecommerce-shop-brd.vercel.app",
+      "status": "completed",
+      "roomId": "room_rmgvmovyi",
+      "result": [
+        {
+          "page_title": "Portable Speaker Echo",
+          "related_products": [
+            {
+              "product_name": "Clack 75% Mechanical Keyboard",
+              "product_url": "https://ecommerce-shop-brd.vercel.app/product/clack-75-mechanical-keyboard",
+              "product_price": {
+                "value": 131.92,
+                "currency": "USD",
+                "symbol": "$"
+              }
+            },
+            {
+              "product_name": "Lumen 4K Webcam",
+              "product_url": "https://ecommerce-shop-brd.vercel.app/product/lumen-4k-webcam",
+              "product_price": {
+                "value": 131.53,
+                "currency": "USD",
+                "symbol": "$"
+              },
+              "product_image": "https://loremflickr.com/800/800/webcam,camera?lock=0051&v=131"
+            },
+            {
+              "product_name": "Hub 9 USB-C Dock",
+              "product_url": "https://ecommerce-shop-brd.vercel.app/product/hub-9-usb-c-dock",
+              "product_price": {
+                "value": 65.17,
+                "currency": "USD",
+                "symbol": "$"
+              },
+              "product_image": "https://loremflickr.com/800/800/usb,hub,dock?lock=0061&v=131"
+            },
+            {
+              "product_name": "Aurora Wireless Headphones",
+              "product_url": "https://ecommerce-shop-brd.vercel.app/product/aurora-wireless-headphones",
+              "product_price": {
+                "value": 171.1,
+                "currency": "USD",
+                "symbol": "$"
+              },
+              "product_image": "https://loremflickr.com/800/800/headphones,audio?lock=0011&v=131"
+            }
+          ],
+          "input": {
+            "url": "https://ecommerce-shop-brd.vercel.app/product/echo-portable-speaker"
+          }
+        }
+      ]
+    }
+  ]
+}
