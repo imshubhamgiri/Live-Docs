@@ -1,8 +1,15 @@
 // brightData.service.ts
 import { bdClient } from '../config/brightdata.config.js';
+import { ScrapedDoc } from '../schemas/docSchema.js';
 
 export class BrightDataService {
   private static instance: BrightDataService;
+ private  promptDescription:string =
+  "Extract structured documentation: " +
+  "`title` (the main page/article title), " +
+  "`content` (the full main article body text formatted as clean markdown), " +
+  "`headings` (a string array of all h1, h2, and h3 subheadings), " +
+  "and `code_blocks` (a string array of all preformatted code snippets).";
 
   private constructor() {}
 
@@ -24,7 +31,7 @@ export class BrightDataService {
 
   async trainTemplate(collectorId: string, targetUrl: string): Promise<void> {
     await bdClient.post(`/dca/collectors/${collectorId}/automate_template`, {
-      description: 'Extract the main page title, and a list of all items/articles.',
+      description: this.promptDescription,
       urls: [targetUrl]
     });
   }
@@ -59,13 +66,13 @@ export class BrightDataService {
   async runCollector(targetUrl: string, collectorId: string): Promise<string> {
     const res = await bdClient.post(
       '/dca/trigger',
-      [{ url: targetUrl, max_pages: 1 }],
+      [{ url: targetUrl }],
       { params: { collector: collectorId } }
     );
     return res.data.collection_id || res.data.id;
   }
 
-  async pollDataset(collectionId: string): Promise<any[]> {
+  async pollDataset(collectionId: string): Promise<ScrapedDoc[]> {
     let attempts = 0;
     const maxAttempts = 180;
     while (attempts < maxAttempts) {
