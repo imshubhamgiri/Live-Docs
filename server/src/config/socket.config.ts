@@ -1,6 +1,7 @@
 import { Server as HTTPServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import {redisSubscriber} from '../config/redis.config.js'
+import { streamStatus } from '../types/index.js';
 
 
 
@@ -36,7 +37,7 @@ export const initSocket = (server: HTTPServer): SocketIOServer => {
           })
       });
 
-      redisSubscriber.subscribe('scrape_status', (err, count) => {
+      redisSubscriber.subscribe('scrape_status_channel', (err, count) => {
         if(err){
             console.error('Failed to subscribe: ', err.message);
         }
@@ -45,7 +46,7 @@ export const initSocket = (server: HTTPServer): SocketIOServer => {
       redisSubscriber.on('message', (channel, message) => {
         if (channel === 'scrape_status_channel') {
             try {
-              const data = JSON.parse(message);
+              const data: streamStatus = JSON.parse(message);
               if (data.roomId) {
                 io!.to(data.roomId).emit('scrape_status', data);
               }
