@@ -42,8 +42,8 @@ export async function processScrapeJob(
     emitStatus('completed', `Found ${result.length} items. Generating embeddings...`);
     dbRepository.updateJobStatus(jobId, 'completed', result);
 
-  } catch (error: any) {
-    const msg = error.response?.data ? JSON.stringify(error.response.data) : error.message;
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'An unknown error occurred';
     dbRepository.updateJobStatus(jobId, 'failed', null, msg);
     emitStatus('failed', msg);
   }
