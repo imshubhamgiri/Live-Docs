@@ -8,7 +8,7 @@ import React from 'react';
   
   export const Navbar: React.FC<NavbarProps> = ({ appState, onResetToHome }) => {
     return (
-      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 px-6 py-3.5 flex items-center justify-between">
+      <header className="sticky top-0 z-40 h-[61px] shrink-0 box-border bg-white/90 backdrop-blur-md border-b border-slate-200 px-6 py-3.5 flex items-center justify-between">
         <div 
           onClick={onResetToHome}
           className="flex items-center space-x-2.5 cursor-pointer group"
