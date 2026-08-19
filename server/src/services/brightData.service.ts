@@ -72,24 +72,94 @@ export class BrightDataService {
     return res.data.collection_id || res.data.id;
   }
 
-  async pollDataset(collectionId: string): Promise<ScrapedDoc[]> {
+  // async pollDataset(collectionId: string): Promise<ScrapedDoc[]> {
+  //   let attempts = 0;
+  //   const maxAttempts = 180;
+  //   while (attempts < maxAttempts) {
+  //     await this.delay(5000);
+  //     try {
+  //       const res = await bdClient.get(`/dca/dataset`, { params: { id: collectionId } });
+  //       const data = res.data;
+  //       if (Array.isArray(data)) return data;
+  //       if (data && typeof data === 'object' && Object.keys(data).length > 0 && data.status !== 'building') {
+  //         return [data];
+  //       }
+  //     } catch (e: any) {
+  //       if (e.response?.status !== 202) throw e;
+  //     }
+  //     attempts++;
+  //   }
+  //   throw new Error(`Timed out waiting for collection: ${collectionId}`);
+  // }
+  async  pollDataset(collectionId: string) {
     let attempts = 0;
     const maxAttempts = 180;
+  
+    console.log(`[Dataset Poll] Starting tracking sequence for collection: ${collectionId}`);
+  
     while (attempts < maxAttempts) {
-      await this.delay(5000);
+      await new Promise(r => setTimeout(r, 5000)); // Poll every 5 seconds
+  
       try {
         const res = await bdClient.get(`/dca/dataset`, { params: { id: collectionId } });
         const data = res.data;
-        if (Array.isArray(data)) return data;
-        if (data && typeof data === 'object' && Object.keys(data).length > 0 && data.status !== 'building') {
-          return [data];
+  
+        // 1. Success Case: Bright Data status strings indicating background processing
+        if (data && (data.status === 'building' || data.status === 'collecting')) {
+          if (attempts % 4 === 0) {
+            console.log(`[Dataset Poll] ⏳ Job is still running (${data.status})... (Elapsed: ${attempts * 5}s)`);
+          }
+          attempts++;
+          continue; // ◄ FORCE KEEP LOOPING
         }
+  
+        // 2. Standard Array Result
+        if (Array.isArray(data)) {
+          // Double check it's not a list containing a placeholder object
+          if (data.length === 1 && (data[0].status === 'collecting' || data[0].status === 'building')) {
+            console.log(`[Dataset Poll] ⏳ Extracted array status placeholder. Keeping pool alive...`);
+            attempts++;
+            continue;
+          }
+          console.log(`[Dataset Poll] Success on Attempt ${attempts + 1}: Retrieved ${data.length} record(s)!`);
+          return data; 
+        }
+  
+        // 3. Single Object Result (Genuine output data)
+        if (data && typeof data === 'object' && Object.keys(data).length > 0) {
+          // Ensure this isn't an error message block
+          if ('error' in data || 'validation_errors' in data) {
+            throw new Error(`Bright Data Runtime Crawler Error: ${JSON.stringify(data)}`);
+          }
+          
+          console.log(`[Dataset Poll] Success on Attempt ${attempts + 1}: Retrieved single object record!`);
+          return [data]; 
+        }
+  
       } catch (e: any) {
-        if (e.response?.status !== 202) throw e;
+        if (e.response?.status === 202) {
+          console.log(`[Dataset Poll] ⏳ Job is queued or processing on Bright Data infrastructure...`);
+        } else {
+          console.log(`[Dataset Poll] Network or API sync delay: ${e.message}`);
+        }
       }
+  
       attempts++;
     }
-    throw new Error(`Timed out waiting for collection: ${collectionId}`);
+  
+    throw new Error(`Timed out waiting for dataset results after 15 minutes. Collection ID: ${collectionId}`);
+  }
+
+  async selfhealing(targetUrl: string, collectorId: string) {
+    try {
+      await bdClient.post(`/dca/collectors/${collectorId}/refactor_template`, {
+        prompt: this.promptDescription,
+        custom_input: { url: targetUrl }
+      });
+    } catch (e: any) {
+      console.error(`Self-Healing Error: ${e.message}`);
+      throw new Error(`Self-Healing Failed: ${e.message}`);
+    }
   }
 
   private async delay(ms: number) {
