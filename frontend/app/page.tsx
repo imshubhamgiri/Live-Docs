@@ -95,12 +95,15 @@ import { useSocket } from "../context/socketcontext";
   
       // 4. Completed
       if (data.status === 'completed') {
+        setProgressPercent(90);
         setIngestionSteps(prev => prev.map(s => {
-          if (s.id === '3') return { ...s, status: 'completed' };
+          if (s.id === '3') return { ...s, status: 'completed' ,detail:'Markdown extraction complete' };
           if (s.id === '4') return { ...s, status: 'loading', detail: data.message || 'Generating vector embeddings...' };
           return s;
         }));
-  
+
+        if(data.message && data.message.toLowerCase().includes('successfully ') && data.message.toLowerCase().includes('index')) {  
+          const totalChunked = data.message.match(/\d+/)?.[0] || '0';
         setTimeout(() => {
           setProgressPercent(100);
           setIngestionSteps(prev => prev.map(s => ({ ...s, status: 'completed' })));
@@ -120,7 +123,7 @@ import { useSocket } from "../context/socketcontext";
               {
                 id: 'm-welcome',
                 sender: 'assistant',
-                text: `Index complete! I have processed **${docUrl}** using Bright Data Scraper Studio. 93 total chunks vectorized and stored in knowledge context.\n\nYou can now ask any technical or conceptual questions about this documentation.`,
+                text: `Index complete! I have processed **${docUrl}** using Bright Data Scraper Studio. ${totalChunked} total chunks vectorized and stored in knowledge context.\n\nYou can now ask any technical or conceptual questions about this documentation.`,
                 timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 sources: [
                   {
@@ -133,6 +136,7 @@ import { useSocket } from "../context/socketcontext";
             ]);
           }, 3000);
         }, 2000);
+      }
       }
     };
   
@@ -161,7 +165,7 @@ import { useSocket } from "../context/socketcontext";
       const globalRoomId = localStorage.getItem('global_room_id');
       
       try {
-        const response = await fetch('http://localhost:4000/api/scrape', {
+        const response = await fetch('http://localhost:4000/api/v1/scrape', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -184,83 +188,183 @@ import { useSocket } from "../context/socketcontext";
       }
     };
   
-    const handleSendMessage = (e?: React.SubmitEvent<HTMLFormElement>) => {
-      if (e) e.preventDefault();
-      if (!inputQuery.trim() || isTyping) return;
+    // const handleSendMessage = (e?: React.SubmitEvent<HTMLFormElement>) => {
+    //   if (e) e.preventDefault();
+    //   if (!inputQuery.trim() || isTyping) return;
   
+    //   const userMsg: Message = {
+    //     id: `u-${Date.now()}`,
+    //     sender: 'user',
+    //     text: inputQuery,
+    //     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    //   };
+  
+    //   setMessages(prev => [...prev, userMsg]);
+    //   const queryText = inputQuery;
+    //   setInputQuery('');
+    //   setIsTyping(true);
+  
+    //   setTimeout(() => {
+    //     let aiText = "";
+    //     let codeSnippet: { language: string; code: string } | undefined = undefined;
+    //     let citations: SourceCitation[] = [];
+  
+    //     const lowerQ = queryText.toLowerCase();
+    //     if (lowerQ.includes('auth') || lowerQ.includes('key') || lowerQ.includes('header') || lowerQ.includes('token')) {
+    //       aiText = "To authenticate your requests against this API, you must pass your API secret key inside the HTTP `Authorization` header as a Bearer token. All requests must be transmitted over HTTPS.";
+    //       codeSnippet = {
+    //         language: 'bash',
+    //         code: `curl -X POST "${docUrl}/v1/query" \\\n  -H "Authorization: Bearer YOUR_BRIGHTDATA_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"zone": "web_unlocker", "url": "https://target-doc.com"}'`
+    //       };
+    //       citations = [
+    //         {
+    //           title: 'Authentication & API Keys',
+    //           url: `${docUrl}#auth`,
+    //           snippet: 'All API endpoints require Bearer authentication headers...'
+    //         }
+    //       ];
+    //     } else if (lowerQ.includes('scraper') || lowerQ.includes('self-healing') || lowerQ.includes('bright')) {
+    //       aiText = "Bright Data's **Scraper Studio** automatically applies AI self-healing selectors. When target documentation sites change their HTML hierarchy or CSS class names, the collector detects DOM shifts and re-targets elements dynamically without failing your ingestion pipeline.";
+    //       codeSnippet = {
+    //         language: 'json',
+    //         code: `{\n  "collector_id": "c_docs_rag_v2",\n  "status": "active",\n  "self_healing": true,\n  "extracted_fields": ["h1", "h2", "article_markdown", "code_blocks"]\n}`
+    //       };
+    //       citations = [
+    //         {
+    //           title: 'Scraper Studio Self-Healing Architecture',
+    //           url: `${docUrl}#self-healing`,
+    //           snippet: 'Automated selector repair guarantees zero downtime during doc schema updates.'
+    //         }
+    //       ];
+    //     } else {
+    //       aiText = `Based on the vector index of **${docUrl}**, here is the pertinent guidance:\n\n1. Ensure your requests target the correct environment endpoints.\n2. Parse response payloads directly as JSON objects.\n3. Utilize standard HTTP response status codes (200 for OK, 401 for Unauthorized, 429 for Rate Limit).`;
+    //       codeSnippet = {
+    //         language: 'javascript',
+    //         code: `// Sample Client Request\nconst response = await fetch("${docUrl}/data", {\n  headers: { "Accept": "application/json" }\n});\nconst data = await response.json();\nconsole.log(data);`
+    //       };
+    //       citations = [
+    //         {
+    //           title: 'API Reference - Requests & Responses',
+    //           url: `${docUrl}#endpoints`,
+    //           snippet: 'Standard JSON schemas and standard HTTP status code handling...'
+    //         }
+    //       ];
+    //     }
+  
+    //     const aiMsg: Message = {
+    //       id: `a-${Date.now()}`,
+    //       sender: 'assistant',
+    //       text: aiText,
+    //       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    //       codeBlock: codeSnippet,
+    //       sources: citations
+    //     };
+  
+    //     setMessages(prev => [...prev, aiMsg]);
+    //     setIsTyping(false);
+    //   }, 1400);
+    // };
+  
+    const handleSendMessage = async (e?: React.SubmitEvent<HTMLFormElement>) => {
+      if (e) e.preventDefault();
+    
+      const queryText = inputQuery;
+      if (!queryText.trim() || isTyping) return;
+    
+      // User message
       const userMsg: Message = {
         id: `u-${Date.now()}`,
         sender: 'user',
-        text: inputQuery,
+        text: queryText,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
-  
       setMessages(prev => [...prev, userMsg]);
-      const queryText = inputQuery;
+    
+      // Reset input + set typing state
       setInputQuery('');
       setIsTyping(true);
-  
-      setTimeout(() => {
-        let aiText = "";
-        let codeSnippet: { language: string; code: string } | undefined = undefined;
+    
+      // Placeholder assistant message
+      const botMsgId = `a-${Date.now() + 1}`;
+      setMessages(prev => [
+        ...prev,
+        { id: botMsgId, sender: 'assistant', text: '', timestamp: '', codeBlock: undefined, sources: [] }
+      ]);
+    
+      try {
+        const { hostname: domain } = new URL(docUrl.startsWith('http') ? docUrl : `https://${docUrl}`);
+        const response = await fetch('http://localhost:4000/api/v1/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: queryText,
+            domain,
+            conversationHistory: messages,
+          }),
+        });
+    
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+        if (!reader) return;
+    
+        let accumulatedText = '';
         let citations: SourceCitation[] = [];
-  
-        const lowerQ = queryText.toLowerCase();
-        if (lowerQ.includes('auth') || lowerQ.includes('key') || lowerQ.includes('header') || lowerQ.includes('token')) {
-          aiText = "To authenticate your requests against this API, you must pass your API secret key inside the HTTP `Authorization` header as a Bearer token. All requests must be transmitted over HTTPS.";
-          codeSnippet = {
-            language: 'bash',
-            code: `curl -X POST "${docUrl}/v1/query" \\\n  -H "Authorization: Bearer YOUR_BRIGHTDATA_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"zone": "web_unlocker", "url": "https://target-doc.com"}'`
-          };
-          citations = [
-            {
-              title: 'Authentication & API Keys',
-              url: `${docUrl}#auth`,
-              snippet: 'All API endpoints require Bearer authentication headers...'
+        let codeSnippet: { language: string; code: string } | undefined = undefined;
+    
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+    
+          const chunk = decoder.decode(value);
+          const lines = chunk.split('\n');
+    
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const parsed = JSON.parse(line.replace('data: ', ''));
+    
+                if (parsed.type === 'citations') {
+                  citations = parsed.citations;
+                } else if (parsed.type === 'token') {
+                  accumulatedText += parsed.token;
+                } else if (parsed.type === 'code') {
+                  codeSnippet = parsed.codeBlock;
+                }
+    
+                // Update assistant message incrementally
+                setMessages(prev =>
+                  prev.map(m =>
+                    m.id === botMsgId
+                      ? {
+                          ...m,
+                          text: accumulatedText,
+                          sources: citations,
+                          codeBlock: codeSnippet,
+                          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                        }
+                      : m
+                  )
+                );
+              } catch {
+                // Ignore partial JSON chunks
+              }
             }
-          ];
-        } else if (lowerQ.includes('scraper') || lowerQ.includes('self-healing') || lowerQ.includes('bright')) {
-          aiText = "Bright Data's **Scraper Studio** automatically applies AI self-healing selectors. When target documentation sites change their HTML hierarchy or CSS class names, the collector detects DOM shifts and re-targets elements dynamically without failing your ingestion pipeline.";
-          codeSnippet = {
-            language: 'json',
-            code: `{\n  "collector_id": "c_docs_rag_v2",\n  "status": "active",\n  "self_healing": true,\n  "extracted_fields": ["h1", "h2", "article_markdown", "code_blocks"]\n}`
-          };
-          citations = [
-            {
-              title: 'Scraper Studio Self-Healing Architecture',
-              url: `${docUrl}#self-healing`,
-              snippet: 'Automated selector repair guarantees zero downtime during doc schema updates.'
-            }
-          ];
-        } else {
-          aiText = `Based on the vector index of **${docUrl}**, here is the pertinent guidance:\n\n1. Ensure your requests target the correct environment endpoints.\n2. Parse response payloads directly as JSON objects.\n3. Utilize standard HTTP response status codes (200 for OK, 401 for Unauthorized, 429 for Rate Limit).`;
-          codeSnippet = {
-            language: 'javascript',
-            code: `// Sample Client Request\nconst response = await fetch("${docUrl}/data", {\n  headers: { "Accept": "application/json" }\n});\nconst data = await response.json();\nconsole.log(data);`
-          };
-          citations = [
-            {
-              title: 'API Reference - Requests & Responses',
-              url: `${docUrl}#endpoints`,
-              snippet: 'Standard JSON schemas and standard HTTP status code handling...'
-            }
-          ];
+          }
         }
-  
-        const aiMsg: Message = {
-          id: `a-${Date.now()}`,
-          sender: 'assistant',
-          text: aiText,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          codeBlock: codeSnippet,
-          sources: citations
-        };
-  
-        setMessages(prev => [...prev, aiMsg]);
+      } catch (err) {
+        console.error('Streaming failed:', err);
+        setMessages(prev =>
+          prev.map(m =>
+            m.id === botMsgId
+              ? { ...m, text: '⚠️ Failed to fetch response.', sources: [] }
+              : m
+          )
+        );
+      } finally {
         setIsTyping(false);
-      }, 1400);
+      }
     };
-  
+    
     const handleResetToHome = () => {
       setAppState('home');
       setMessages([]);
@@ -268,10 +372,10 @@ import { useSocket } from "../context/socketcontext";
     };
   
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className={`flex flex-col ${appState === 'chat' ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
         <Navbar appState={appState} onResetToHome={handleResetToHome} />
         
-        <main className="flex-1 flex flex-col">
+        <main className={`flex-1 flex flex-col ${appState === 'chat' ? 'min-h-0' : ''}`}>
           {appState === 'home' && (
             <HeroView 
               docUrl={docUrl}
