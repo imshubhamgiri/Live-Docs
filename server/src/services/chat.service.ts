@@ -9,7 +9,7 @@ const pineconeIndex = pinecone.Index({ name: process.env.PINECONE_INDEX_NAME || 
 
 
 const model = new ChatGroq({
-  model: 'llama-3.1-8b-instant', // free tier, strong general-purpose model
+  model: 'openai/gpt-oss-20b', // free tier, strong general-purpose model
   streaming: true,
   temperature: 0.1,
   apiKey: process.env.GROQ_API_KEY,
@@ -48,10 +48,13 @@ export const ragService = {
   },
 
   async getChatStream(query: string, domain: string, contextText: string, history: ChatMessage[]) {
-    const systemPrompt = `You are a technical documentation assistant for "${domain}".
-Use ONLY the provided context excerpts to answer the question.
-If the context does not contain the answer, say "I could not find information about that in the crawled documentation." Do not fabricate answers.
-Always reference relevant section titles where appropriate.
+    const systemPrompt = `You are a helpful RAG assistant. 
+    Use the provided context to answer the user's question. 
+    
+    CRITICAL: If the context does not contain the answer, or if the context is empty, 
+    do NOT say you don't know. Instead, clearly state that you are relying on your 
+    general training knowledge, and then answer the question fully based on your 
+    own internal knowledge about the topic.
 
 Context:
 ${contextText || 'No context found.'}`;
