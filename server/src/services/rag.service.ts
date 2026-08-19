@@ -29,7 +29,7 @@ export async function processAndStoreEmbeddings(
   emitStatus: (status: string, message: string) => void
 ) {
   try {
-    emitStatus("chunking", "Chunking documentation content...");
+    emitStatus("completed", "Chunking documentation content...");
 
     const splitter = new RecursiveCharacterTextSplitter({
       chunkSize: 1000,
@@ -76,7 +76,7 @@ export async function processAndStoreEmbeddings(
       }
     }
 
-    emitStatus("vectorizing", `Upserting ${recordsToUpsert.length} vectors to Pinecone...`);
+    emitStatus("completed", `Upserting ${recordsToUpsert.length} vectors to Pinecone...`);
 
     // Batch upsert to Pinecone (100 records per HTTP payload)
     const batchSize = 100;
