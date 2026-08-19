@@ -1,6 +1,8 @@
 // scrapeJob.ts
 import { BrightDataService } from './brightData.service.js';
 import { dbRepository } from '../repositories/json.db.js';
+import { processAndStoreEmbeddings } from './rag.service.js';
+import { validateScrapedDocs } from '../utlis/validateResult.js';
 
 export async function processScrapeJob(
   jobId: string,
@@ -38,10 +40,11 @@ export async function processScrapeJob(
 
     emitStatus('extracting_data', 'Polling for dataset...');
     const result = await brightData.pollDataset(collectionId);
-
-    emitStatus('completed', `Found ${result.length} items. Generating embeddings...`);
-    dbRepository.updateJobStatus(jobId, 'completed', result);
-
+    const validatedDocs = await validateScrapedDocs(result, targetUrl, collectorId, brightData.selfhealing);
+    emitStatus('completed', `Found ${validatedDocs.length} items. Generating embeddings...`);
+    await processAndStoreEmbeddings(validatedDocs, jobId, emitStatus);
+    dbRepository.updateJobStatus(jobId, 'completed', validatedDocs.length, 'Job completed successfully.');
+    
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'An unknown error occurred';
     dbRepository.updateJobStatus(jobId, 'failed', null, msg);
