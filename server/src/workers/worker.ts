@@ -26,6 +26,13 @@ export const initScrapeWorker = () => {
       );
     
     
+
+    scrapeWorker.on("failed", (job, err) => {
+      console.error(`Job ${job?.id} failed with error: ${err.message}`);
+    }) 
+    scrapeWorker.on("ready", () => {
+      console.log("Scrape worker is ready to process jobs.");
+    })
     scrapeWorker.on("completed", (job) => {
       console.log(`Job ${job.id} completed`);
     })  
