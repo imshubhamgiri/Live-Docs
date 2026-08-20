@@ -9,7 +9,7 @@ const pinecone = new Pinecone({
   apiKey: process.env.PINECONE_API_KEY! 
 });
 
-const index = pinecone.Index({name:process.env.PINECONE_INDEX_NAME || 'docs-rag'});
+export const index = pinecone.Index({name:process.env.PINECONE_INDEX_NAME || 'docs-rag'});
 
 // 2. Singleton Local Embedding Pipeline (Runs on CPU, 100% Free, No API Keys)
 let extractor: any = null;
@@ -25,10 +25,14 @@ export async function getEmbedding(text: string): Promise<number[]> {
 // 3. Process, Chunk, Embed, and Store
 export async function processAndStoreEmbeddings(
   rawRecords: ScrapedDoc[],
-  roomId: string,
+  roomId: string | undefined,
   emitStatus: (status: string, message: string) => void
 ) {
   try {
+    emitStatus("completed", "Clearing old vectors for this room...");
+    await index._deleteMany({
+      filter:{url: rawRecords[0]?.url , roomId: { $eq: roomId }}   // only deletes chunks belonging to this roomId
+    });
     emitStatus("completed", "Chunking documentation content...");
 
     const splitter = new RecursiveCharacterTextSplitter({
@@ -52,7 +56,6 @@ export async function processAndStoreEmbeddings(
       return;
     }
 
-    const jobSeed = Date.now();
 
     for (const [docIdx, record] of validRecords.entries()) {
       const chunks = await splitter.splitText(record.content);
@@ -62,15 +65,17 @@ export async function processAndStoreEmbeddings(
         const vector = await getEmbedding(chunk);
 
         recordsToUpsert.push({
-          id: `room_${roomId}_doc_${docIdx}_chunk_${chunkIdx}_${jobSeed}`,
+          id: `room_${roomId}_doc_${docIdx}_chunk_${chunkIdx}`,
           values: vector,
           metadata: {
             text: chunk, // Required for your RAG retrieval to pass context to the LLM
+            domain: new URL(record.url).hostname, // Use the URL as the domain for filtering
             url: record.url,
             title: record.title || "Documentation Section",
             headings: (record.headings || []).join(", "),
             roomId: roomId,
             chunkIndex: chunkIdx,
+            hasLinks: /<a\s+href=/.test(chunk),
           },
         });
       }
