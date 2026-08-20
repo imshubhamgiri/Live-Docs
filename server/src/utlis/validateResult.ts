@@ -23,6 +23,7 @@ const validatedDocs: ScrapedDoc[] = [];
       // Normalize Content
       const content =
         rawItem.content ||
+        rawItem.article_content || 
         rawItem.markdown_content ||
         rawItem.markdown_content_text ||
         rawItem.body ||
@@ -34,7 +35,7 @@ const validatedDocs: ScrapedDoc[] = [];
       const rawHeadings = rawItem.headings || rawItem.subheadings || rawItem.articles;
       if (Array.isArray(rawHeadings)) {
         headings = rawHeadings
-          .map((h: any) => (typeof h === 'string' ? h : h.title || h.heading || h.text || ''))
+          .map((h: unknown | any) => (typeof h === 'string' ? h : h.title || h.heading || h.text || ''))
           .filter(Boolean);
       }
     
@@ -43,7 +44,7 @@ const validatedDocs: ScrapedDoc[] = [];
       const rawCodes = rawItem.code_blocks || rawItem.codeBlocks || rawItem.snippets;
       if (Array.isArray(rawCodes)) {
         codeBlocks = rawCodes
-          .map((c: any) => (typeof c === 'string' ? c : c.code || c.snippet || ''))
+          .map((c: unknown | any) => (typeof c === 'string' ? c : c.code || c.snippet || ''))
           .filter(Boolean);
       }
     

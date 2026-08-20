@@ -1,21 +1,20 @@
 // brightData.service.ts
 import { bdClient } from '../config/brightdata.config.js';
-import { ScrapedDoc } from '../schemas/docSchema.js';
 
 export class BrightDataService {
   private static instance: BrightDataService;
- private  promptDescription:string =
+ private readonly  promptDescription:string =
   "Extract structured documentation: " +
   "`title` (the main page/article title), " +
   "`content` (the full main article body text formatted as clean markdown), " +
   "`headings` (a string array of all h1, h2, and h3 subheadings), " +
   "and `code_blocks` (a string array of all preformatted code snippets).";
 
-  private constructor() {}
+  private constructor(private readonly bdClient: any) {}
 
   public static getInstance(): BrightDataService {
     if (!BrightDataService.instance) {
-      BrightDataService.instance = new BrightDataService();
+      BrightDataService.instance = new BrightDataService(bdClient);
     }
     return BrightDataService.instance;
   }
@@ -150,7 +149,7 @@ export class BrightDataService {
     throw new Error(`Timed out waiting for dataset results after 15 minutes. Collection ID: ${collectionId}`);
   }
 
-  async selfhealing(targetUrl: string, collectorId: string) {
+  async triggerRefactor(collectorId: string, targetUrl: string) {
     try {
       await bdClient.post(`/dca/collectors/${collectorId}/refactor_template`, {
         prompt: this.promptDescription,
@@ -160,6 +159,22 @@ export class BrightDataService {
       console.error(`Self-Healing Error: ${e.message}`);
       throw new Error(`Self-Healing Failed: ${e.message}`);
     }
+  }
+  async waitForRefactor(collectorId: string, onProgress?: (msg: string) => void): Promise<void> {
+    const maxAttempts = 60;
+    for (let i = 0; i < maxAttempts; i++) {
+      await new Promise((r) => setTimeout(r, 4000));
+      
+      // Check collector status / template state
+      const res = await bdClient.get(`/dca/collectors/${collectorId}`);
+      const status = res.data.status || res.data.template_status;
+
+      if (status === 'ready' || status === 'done' || status === 'active') return;
+      if (status === 'failed') throw new Error(`Template refactoring failed on ${collectorId}`);
+
+      onProgress?.(`Applying self-healing refactor (${status || 'analyzing'})...`);
+    }
+    throw new Error(`Timeout waiting for refactor completion on ${collectorId}`);
   }
 
   private async delay(ms: number) {
