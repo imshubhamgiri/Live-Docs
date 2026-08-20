@@ -4,9 +4,9 @@ import {z} from "zod";
 
 
 export const validateScrapedDocs = async (result: any[],
-     targetUrl: string, 
-     collectorId: string, 
-    selfhealing: (targetUrl: string, collectorId: string) => Promise<void>): Promise<ScrapedDoc[]> => {
+    targetUrl: string,
+    ): Promise<ScrapedDoc[]> => {
+      console.log(result);
 
 const validatedDocs: ScrapedDoc[] = [];
 
@@ -62,11 +62,8 @@ const validatedDocs: ScrapedDoc[] = [];
       if (!parsed.success) {
         console.error(" Gate Failed:", JSON.stringify(z.treeifyError(parsed.error), null, 2));
         console.error("Original Raw Payload:", JSON.stringify(rawItem, null, 2));
-    
         // Trigger Self-Healing only when normalization genuinely fails to extract valid fields
-        await selfhealing(targetUrl ,collectorId).catch(e => console.error(`Self-Healing Error: ${e.message}`));
-    
-        throw new Error("Local validation layout mismatch. Self-healing triggered. Please re-run job.");
+      throw new Error("Local validation layout mismatch. Self-healing triggered. Please re-run job.");
       }
     
       validatedDocs.push(parsed.data);
