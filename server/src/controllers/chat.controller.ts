@@ -3,7 +3,7 @@ import { ragService } from '../services/chat.service.js';
 
 export const chatController = {
   streamChat: async (req: Request, res: Response) => {
-    const { query, domain, conversationHistory = [] } = req.body;
+    const { query, domain, conversationHistory = [] , roomId} = req.body;
 
     if (!query || !domain) {
       return res.status(400).json({ error: 'Query and domain are required' });
@@ -16,7 +16,7 @@ export const chatController = {
 
     try {
       // 1. Retrieve vector context and citations from Pinecone
-      const { citations, contextText } = await ragService.retrieveContext(query, domain);
+      const { citations, contextText } = await ragService.retrieveContext(query, domain , roomId);
 
       // Send citations as the first event payload
       res.write(`data: ${JSON.stringify({ type: 'citations', citations })}\n\n`);
