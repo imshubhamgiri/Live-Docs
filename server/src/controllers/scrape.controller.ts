@@ -12,7 +12,7 @@ export const scrapeController = {
         const domain = new URL(url).hostname;
         const jobId = `job_${Date.now()}`;
     
-        dbRepository.createJob({ id: jobId, url, domain, status: 'queued', roomId });
+       await dbRepository.createJob({ id: jobId, url, domain, status: 'queued', roomId });
     
         // Initial status event
         redisPublisher.publish(
@@ -26,8 +26,8 @@ export const scrapeController = {
         return res.status(202).json({ message: 'Job queued', jobId });
       },
 
-  getJobStatus: (req: Request, res: Response) => {
-    const job = dbRepository.findJobById(req.params.id as string);
+  getJobStatus: async (req: Request, res: Response) => {
+    const job = await dbRepository.findJobById(req.params.id as string);
     return job ? res.json(job) : res.status(404).json({ error: 'Not found' });
   }
 };
