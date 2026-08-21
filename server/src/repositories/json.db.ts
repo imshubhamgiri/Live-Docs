@@ -1,51 +1,45 @@
-import fs from 'fs';
+import {  ScrapeJobModel } from '../model/scraper.model.js';
+import { CollectorModel } from '../model/collector.model.js';
 
-const DB_FILE = './db.json';
-if (!fs.existsSync(DB_FILE)) {
-  fs.writeFileSync(DB_FILE, JSON.stringify({ collectors: [], jobs: [] }, null, 2));
-}
+ export type JobStatus = 'queued' | 'processing' | 'training_ai_layout' | 'extracting_data' | 'collecting' | 'completed' | 'failed';
+
+type CollectorInput = { domain: string; collectorId: string; status: string };
+type JobInput = { id: string; url: string; domain: string; status: JobStatus; roomId: string };
 
 export const dbRepository = {
-  read: () => {
-    try {
-      const c = fs.readFileSync(DB_FILE, 'utf8').trim();
-      return c ? JSON.parse(c) : { collectors: [], jobs: [] };
-    } catch {
-      return { collectors: [], jobs: [] };
+  findCollectorByDomain: async (domain: string) => {
+    return CollectorModel.findOne({ domain, status: 'ready' }).lean();
+  },
+
+  saveCollector: async (collector: CollectorInput) => {
+   await CollectorModel.create(collector);
+  },
+
+  createJob: async (job: JobInput) => {
+    await ScrapeJobModel.create(job);
+  },
+
+  updateJobStatus: async (id: string, status: string, result: unknown = null, error: unknown = null) => {
+    const updateData: { status: string; result?: unknown; error?: string } = { status };
+
+    if (result !== null && result !== undefined) {
+      updateData.result = result;
     }
-  },
-  write: (data: any) => {
-    try {
-      fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
-    } catch (e) {
-      console.error('DB write error:', e);
+
+    if (typeof error === 'string' && error.length > 0) {
+      updateData.error = error;
     }
+
+    await ScrapeJobModel.findOneAndUpdate({ id }, updateData);
   },
-  findCollectorByDomain: (domain: string) => {
-    const data = dbRepository.read();
-    return data.collectors.find((c: any) => c.domain === domain && c.status === 'ready');
+
+  findJobById: async (id: string) => {
+    return ScrapeJobModel.findOne({ id }).lean();
   },
-  saveCollector: (collector: { domain: string; collectorId: string; status: string }) => {
-    const data = dbRepository.read();
-    data.collectors.push(collector);
-    dbRepository.write(data);
-  },
-  createJob: (job: { id: string; url: string; domain: string; status: string; roomId: string }) => {
-    const data = dbRepository.read();
-    data.jobs.push(job);
-    dbRepository.write(data);
-  },
-  updateJobStatus: (id: string, status: string, result: any = null, error: any = null) => {
-    const data = dbRepository.read();
-    const job = data.jobs.find((j: any) => j.id === id);
-    if (job) {
-      job.status = status;
-      if (result) job.result = result;
-      if (error) job.error = error;
-      dbRepository.write(data);
-    }
-  },
-  findJobById: (id: string) => {
-    return dbRepository.read().jobs.find((j: any) => j.id === id);
+
+  getRoomId: async (jobId: string) => {
+    const job = await ScrapeJobModel.findOne({ id: jobId }).lean();
+    return job?.roomId;
   }
 };
+ 
