@@ -9,15 +9,19 @@ import { Footer } from '../components/Footer';
 import { useSocket } from "../context/socketcontext";
   
   const PRESET_URLS = [
-    '[https://docs.brightdata.com/scraper-studio](https://docs.brightdata.com/scraper-studio)',
-    '[https://docs.stripe.com/api/authentication](https://docs.stripe.com/api/authentication)',
-    '[https://docs.docker.com/engine/reference](https://docs.docker.com/engine/reference)'
+    'https://docs.brightdata.com/scraper-studio',
+    'https://docs.stripe.com/api/authentication',
+    'https://docs.docker.com/engine/reference'
   ];
   
   export default  function Home() {
     const [appState, setAppState] = useState<'home' | 'ingesting' | 'chat'>('home');
     const [docUrl, setDocUrl] = useState<string>('[https://docs.brightdata.com/v2/guides](https://docs.brightdata.com/v2/guides)');
     const { socket, isJoined } = useSocket();
+    const [roomId, setRoomId] = useState<string | null>(null);
+    useEffect(() => {
+      setRoomId(typeof window !== 'undefined' ? localStorage.getItem('global_room_id') : null);
+    }, [isJoined]);
     
     const [progressPercent, setProgressPercent] = useState<number>(0);
     const [ingestionSteps, setIngestionSteps] = useState<IngestionStep[]>([
@@ -31,6 +35,7 @@ import { useSocket } from "../context/socketcontext";
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputQuery, setInputQuery] = useState<string>('');
     const [isTyping, setIsTyping] = useState<boolean>(false);
+
   // Setup socket listener with proper cleanup
   useEffect(() => {
     if (!socket) return;
@@ -97,7 +102,7 @@ import { useSocket } from "../context/socketcontext";
       if (data.status === 'completed') {
         setProgressPercent(90);
         setIngestionSteps(prev => prev.map(s => {
-          if (s.id === '3') return { ...s, status: 'completed' ,detail:'Markdown extraction complete' };
+          if (s.id === '3') return { ...s, status: 'completed'  };
           if (s.id === '4') return { ...s, status: 'loading', detail: data.message || 'Generating vector embeddings...' };
           return s;
         }));
@@ -188,83 +193,6 @@ import { useSocket } from "../context/socketcontext";
       }
     };
   
-    // const handleSendMessage = (e?: React.SubmitEvent<HTMLFormElement>) => {
-    //   if (e) e.preventDefault();
-    //   if (!inputQuery.trim() || isTyping) return;
-  
-    //   const userMsg: Message = {
-    //     id: `u-${Date.now()}`,
-    //     sender: 'user',
-    //     text: inputQuery,
-    //     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    //   };
-  
-    //   setMessages(prev => [...prev, userMsg]);
-    //   const queryText = inputQuery;
-    //   setInputQuery('');
-    //   setIsTyping(true);
-  
-    //   setTimeout(() => {
-    //     let aiText = "";
-    //     let codeSnippet: { language: string; code: string } | undefined = undefined;
-    //     let citations: SourceCitation[] = [];
-  
-    //     const lowerQ = queryText.toLowerCase();
-    //     if (lowerQ.includes('auth') || lowerQ.includes('key') || lowerQ.includes('header') || lowerQ.includes('token')) {
-    //       aiText = "To authenticate your requests against this API, you must pass your API secret key inside the HTTP `Authorization` header as a Bearer token. All requests must be transmitted over HTTPS.";
-    //       codeSnippet = {
-    //         language: 'bash',
-    //         code: `curl -X POST "${docUrl}/v1/query" \\\n  -H "Authorization: Bearer YOUR_BRIGHTDATA_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"zone": "web_unlocker", "url": "https://target-doc.com"}'`
-    //       };
-    //       citations = [
-    //         {
-    //           title: 'Authentication & API Keys',
-    //           url: `${docUrl}#auth`,
-    //           snippet: 'All API endpoints require Bearer authentication headers...'
-    //         }
-    //       ];
-    //     } else if (lowerQ.includes('scraper') || lowerQ.includes('self-healing') || lowerQ.includes('bright')) {
-    //       aiText = "Bright Data's **Scraper Studio** automatically applies AI self-healing selectors. When target documentation sites change their HTML hierarchy or CSS class names, the collector detects DOM shifts and re-targets elements dynamically without failing your ingestion pipeline.";
-    //       codeSnippet = {
-    //         language: 'json',
-    //         code: `{\n  "collector_id": "c_docs_rag_v2",\n  "status": "active",\n  "self_healing": true,\n  "extracted_fields": ["h1", "h2", "article_markdown", "code_blocks"]\n}`
-    //       };
-    //       citations = [
-    //         {
-    //           title: 'Scraper Studio Self-Healing Architecture',
-    //           url: `${docUrl}#self-healing`,
-    //           snippet: 'Automated selector repair guarantees zero downtime during doc schema updates.'
-    //         }
-    //       ];
-    //     } else {
-    //       aiText = `Based on the vector index of **${docUrl}**, here is the pertinent guidance:\n\n1. Ensure your requests target the correct environment endpoints.\n2. Parse response payloads directly as JSON objects.\n3. Utilize standard HTTP response status codes (200 for OK, 401 for Unauthorized, 429 for Rate Limit).`;
-    //       codeSnippet = {
-    //         language: 'javascript',
-    //         code: `// Sample Client Request\nconst response = await fetch("${docUrl}/data", {\n  headers: { "Accept": "application/json" }\n});\nconst data = await response.json();\nconsole.log(data);`
-    //       };
-    //       citations = [
-    //         {
-    //           title: 'API Reference - Requests & Responses',
-    //           url: `${docUrl}#endpoints`,
-    //           snippet: 'Standard JSON schemas and standard HTTP status code handling...'
-    //         }
-    //       ];
-    //     }
-  
-    //     const aiMsg: Message = {
-    //       id: `a-${Date.now()}`,
-    //       sender: 'assistant',
-    //       text: aiText,
-    //       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    //       codeBlock: codeSnippet,
-    //       sources: citations
-    //     };
-  
-    //     setMessages(prev => [...prev, aiMsg]);
-    //     setIsTyping(false);
-    //   }, 1400);
-    // };
-  
     const handleSendMessage = async (e?: React.SubmitEvent<HTMLFormElement>) => {
       if (e) e.preventDefault();
     
@@ -293,6 +221,7 @@ import { useSocket } from "../context/socketcontext";
     
       try {
         const { hostname: domain } = new URL(docUrl.startsWith('http') ? docUrl : `https://${docUrl}`);
+        
         const response = await fetch('http://localhost:4000/api/v1/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -300,6 +229,7 @@ import { useSocket } from "../context/socketcontext";
             query: queryText,
             domain,
             conversationHistory: messages,
+            roomId
           }),
         });
     
