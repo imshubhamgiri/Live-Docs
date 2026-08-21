@@ -35,19 +35,19 @@ export class BrightDataService {
     });
   }
 
-  async waitForAI(collectorId: string, emitStatus: Function): Promise<void> {
+  async waitForAI(collectorId: string, onProgress: Function): Promise<void> {
     let attempts = 0;
     while (attempts < 30) {
       await this.delay(9000);
-      try {
-        const res = await bdClient.get(`/dca/collectors/${collectorId}/automate_template/progress`);
-        const status = res.data.status;
-        if (status === 'done' || status === 'completed') return;
-        if (status === 'failed') throw new Error("AI Training Failed");
-      } catch { /* retry */ }
+      const res = await bdClient.get(`/dca/collectors/${collectorId}/progress`);
+      const status = res.data.status;
+
+      if (status === 'ready' || status === 'done' || status === 'success') return;
+      if (status === 'failed') throw new Error(`AI Template creation failed for collector ${collectorId}`);
+
+      onProgress?.(`AI training in progress (${status})...`);
       attempts++;
     }
-    emitStatus('failed', 'AI Training timed out.');
     throw new Error("AI Training timed out");
   }
 
@@ -71,25 +71,6 @@ export class BrightDataService {
     return res.data.collection_id || res.data.id;
   }
 
-  // async pollDataset(collectionId: string): Promise<ScrapedDoc[]> {
-  //   let attempts = 0;
-  //   const maxAttempts = 180;
-  //   while (attempts < maxAttempts) {
-  //     await this.delay(5000);
-  //     try {
-  //       const res = await bdClient.get(`/dca/dataset`, { params: { id: collectionId } });
-  //       const data = res.data;
-  //       if (Array.isArray(data)) return data;
-  //       if (data && typeof data === 'object' && Object.keys(data).length > 0 && data.status !== 'building') {
-  //         return [data];
-  //       }
-  //     } catch (e: any) {
-  //       if (e.response?.status !== 202) throw e;
-  //     }
-  //     attempts++;
-  //   }
-  //   throw new Error(`Timed out waiting for collection: ${collectionId}`);
-  // }
   async  pollDataset(collectionId: string) {
     let attempts = 0;
     const maxAttempts = 180;
@@ -166,7 +147,7 @@ export class BrightDataService {
       await new Promise((r) => setTimeout(r, 4000));
       
       // Check collector status / template state
-      const res = await bdClient.get(`/dca/collectors/${collectorId}`);
+      const res = await bdClient.get(`/dca/collectors/${collectorId}/refactor_template/progress`);
       const status = res.data.status || res.data.template_status;
 
       if (status === 'ready' || status === 'done' || status === 'active') return;
