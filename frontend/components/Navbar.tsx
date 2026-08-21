@@ -8,7 +8,7 @@ import React from 'react';
   
   export const Navbar: React.FC<NavbarProps> = ({ appState, onResetToHome }) => {
     return (
-      <header className="sticky top-0 z-40 h-[61px] shrink-0 box-border bg-white/90 backdrop-blur-md border-b border-slate-200 px-6 py-3.5 flex items-center justify-between">
+      <header className="sticky top-0 z-40 h-15.25 shrink-0 box-border bg-white/90 backdrop-blur-md border-b border-slate-200 px-6 py-3.5 flex items-center justify-between">
         <div 
           onClick={onResetToHome}
           className="flex items-center space-x-2.5 cursor-pointer group"
@@ -29,7 +29,7 @@ import React from 'react';
           <a href="#brightdata" className="hover:text-blue-600 transition-colors flex items-center gap-1.5">
             <ShieldCheck className="w-4 h-4 text-emerald-600" /> Bright Data Scraper
           </a>
-          <a href="https://github.com/imshubhamgiri" target="_blank" rel="noreferrer" className="hover:text-slate-900 transition-colors">GitHub</a>
+          <a href="https://github.com/imshubhamgiri/Live-Docs" target="_blank" rel="noreferrer" className="hover:text-slate-900 transition-colors">GitHub</a>
         </nav>
   
         <div className="flex items-center space-x-3">
