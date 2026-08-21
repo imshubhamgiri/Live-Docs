@@ -6,7 +6,6 @@ import {z} from "zod";
 export const validateScrapedDocs = async (result: any[],
     targetUrl: string,
     ): Promise<ScrapedDoc[]> => {
-      console.log(result);
 
 const validatedDocs: ScrapedDoc[] = [];
 

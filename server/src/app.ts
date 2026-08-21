@@ -6,7 +6,7 @@ import { initSocket } from './config/socket.config.js';
 import indexRoutes from './routes/index.js';
 import { connectToDatabase } from './config/mongose.db.js';
 import mongoose from 'mongoose';
-import { globalLimiter } from './middleware/rate.limitter.js';
+import { globalLimiter } from './middleware/rate.limiter.js';
 import { registerShutdownHandlers } from './utlis/gracefulShutdown.js';
 import { scrapeQueue } from './config/queue.config.js';
 import { redisConnection } from './config/redis.config.js';
@@ -47,9 +47,10 @@ registerShutdownHandlers({
 process.on('unhandledRejection', (reason) => {
     console.error('Unhandled promise rejection:', reason);
   });
-  process.on('uncaughtException', (error) => {
-    console.error('Uncaught exception:', error);
-  });
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught exception:', error);
+});
 
  
 server.listen(4000, () => console.log('Server listening on port 4000'));
