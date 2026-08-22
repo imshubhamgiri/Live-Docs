@@ -1,4 +1,4 @@
-import rateLimit from 'express-rate-limit';
+import {rateLimit} from 'express-rate-limit';
 
 export const scrapeLimiter = rateLimit({
   windowMs: 10 * 60 * 1000, // 10 minutes
