@@ -39,7 +39,7 @@ export class BrightDataService {
     let attempts = 0;
     while (attempts < 30) {
       await this.delay(9000);
-      const res = await bdClient.get(`/dca/collectors/${collectorId}/progress`);
+      const res = await bdClient.get(`/dca/collectors/${collectorId}/automate_template/progress`);
       const status = res.data.status;
 
       if (status === 'ready' || status === 'done' || status === 'success') return;
