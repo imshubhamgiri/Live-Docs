@@ -1,6 +1,6 @@
 import { Pinecone } from '@pinecone-database/pinecone';
 import { ChatGroq } from '@langchain/groq';
-import { HumanMessage, SystemMessage } from '@langchain/core/messages';
+import { HumanMessage, SystemMessage, AIMessage } from '@langchain/core/messages';
 import {getEmbedding} from '../services/rag.service.js'
 
 const pinecone = new Pinecone({ apiKey: process.env.PINECONE_API_KEY! });
@@ -22,11 +22,15 @@ export interface ChatMessage {
 
 export const ragService = {
   async retrieveContext(query: string, domain: string , roomId?:string) {
+    let needLinks = false;
+    if(query.includes('url') || query.includes('links') || query.includes('link') || query.includes('website') || query.includes('webpage') || query.includes('web page') || query.includes('web site') || query.includes('websites') || query.includes('webpages')){
+      needLinks = true;
+    }
     const queryEmbedding = await getEmbedding(query);
     const queryResponse = await pineconeIndex.query({
       vector: queryEmbedding,
       topK: 10,
-      filter: { roomId: { $eq: roomId } ,domain: { $eq: domain } ,  hasLinks: { $eq: true } },
+      filter: { roomId: { $eq: roomId } ,domain: { $eq: domain } },
       includeMetadata: true,
     });
 
@@ -56,11 +60,11 @@ export const ragService = {
 
     const messages = [
       new SystemMessage(systemPrompt),
-      ...history.slice(-4).map((msg) =>
-        msg.sender === 'assistant' ? new SystemMessage(msg.text) : new HumanMessage(msg.text)
+      ...history.slice(-4).map((msg) => 
+          msg.sender === 'assistant' ? new AIMessage(msg.text) : new HumanMessage(msg.text)
       ),
       new HumanMessage(query),
-    ];
+  ];
 
     return model.stream(messages);
   }
