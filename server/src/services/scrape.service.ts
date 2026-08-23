@@ -20,10 +20,6 @@ export async function processScrapeJob(
    return;
  }
 
-  const collector = await dbRepository.findCollectorByDomain(domain);
-  let collectorId = collector?.collectorId;
-  console.log(collectorId);
-
   try {
     // 2. Ensure Collector Exists & Is Trained
     const collectorId = await scraperEngine.ensureCollector(domain, targetUrl, (msg) => {
@@ -46,6 +42,7 @@ export async function processScrapeJob(
    await dbRepository.updateJobStatus(jobId, 'completed', validatedDocs);
     
   } catch (error: unknown) {
+    console.log(error);
     const msg = error instanceof Error ? error.message : 'An unknown error occurred';
    await dbRepository.updateJobStatus(jobId, 'failed', null, msg);
     emitStatus('failed', msg);
