@@ -1,14 +1,14 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Globe, ArrowRight, Sparkles, Cpu, ShieldCheck, Database } from 'lucide-react';
   
   interface HeroViewProps {
     docUrl: string;
     setDocUrl: (url: string) => void;
-    onSubmit: (e?: React.FormEvent) => void;
+    onSubmit: (e?: React.SubmitEvent<HTMLFormElement>) => void;
     presetUrls: string[];
   }
   
-  export const HeroView: React.FC<HeroViewProps> = ({
+  export const HeroView: React.FC<HeroViewProps> = memo(({
     docUrl,
     setDocUrl,
     onSubmit,
@@ -107,4 +107,5 @@ import { Globe, ArrowRight, Sparkles, Cpu, ShieldCheck, Database } from 'lucide-
         </div>
       </div>
     );
-  };
+  });
+

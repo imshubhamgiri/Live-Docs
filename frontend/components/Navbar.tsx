@@ -1,4 +1,4 @@
-import React from 'react';
+import React ,{memo} from 'react';
   import { BookOpen, ShieldCheck, PlusCircle } from 'lucide-react';
   
   interface NavbarProps {
@@ -6,7 +6,7 @@ import React from 'react';
     onResetToHome: () => void;
   }
   
-  export const Navbar: React.FC<NavbarProps> = ({ appState, onResetToHome }) => {
+  export const Navbar: React.FC<NavbarProps> = memo(({ appState, onResetToHome }) => {
     return (
       <header className="sticky top-0 z-40 h-15.25 shrink-0 box-border bg-white/90 backdrop-blur-md border-b border-slate-200 px-6 py-3.5 flex items-center justify-between">
         <div 
@@ -49,5 +49,6 @@ import React from 'react';
         </div>
       </header>
     );
-  };
- 
+  });
+  
+  Navbar.displayName = 'Navbar';
