@@ -7,6 +7,7 @@ import { IngestionModal, IngestionStep } from '../components/IngestionModal';
 import { ChatView, IndexedPage, Message, SourceCitation } from '../components/ChatView';
 import { Footer } from '../components/Footer';
 import { useSocket } from "../context/socketcontext";
+import {useIngestion} from '../hooks/useIngestion';
   
   const PRESET_URLS = [
     'https://docs.brightdata.com/scraper-studio',
@@ -16,184 +17,53 @@ import { useSocket } from "../context/socketcontext";
   
   export default  function Home() {
     const [appState, setAppState] = useState<'home' | 'ingesting' | 'chat'>('home');
-    const [docUrl, setDocUrl] = useState<string>('[https://docs.brightdata.com/v2/guides](https://docs.brightdata.com/v2/guides)');
+    const [docUrl, setDocUrl] = useState<string>('https://docs.brightdata.com/v2/guides');
     const { socket, isJoined } = useSocket();
     const [roomId, setRoomId] = useState<string | null>(null);
-    useEffect(() => {
-      setRoomId(typeof window !== 'undefined' ? localStorage.getItem('global_room_id') : null);
-    }, [isJoined]);
-    
-    const [progressPercent, setProgressPercent] = useState<number>(0);
-    const [ingestionSteps, setIngestionSteps] = useState<IngestionStep[]>([
-      { id: '1', label: 'Validating Target URL', status: 'pending' },
-      { id: '2', label: 'Analyzing Site Structure & Routes', status: 'pending' },
-      { id: '3', label: 'Extracting Markdown Text (Self-Healing Enabled)', detail: 'Scraper Studio Engine active', status: 'pending' },
-      { id: '4', label: 'Chunking & Generating Vector Embeddings', detail: 'Pinecone Vector Store', status: 'pending' }
-    ]);
-  
-    const [indexedPages, setIndexedPages] = useState<IndexedPage[]>([]);
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputQuery, setInputQuery] = useState<string>('');
     const [isTyping, setIsTyping] = useState<boolean>(false);
+    useEffect(() => {
+      setRoomId(typeof window !== 'undefined' ? localStorage.getItem('global_room_id') : null);
+    }, [isJoined]);
 
-  // Setup socket listener with proper cleanup
-  useEffect(() => {
-    if (!socket) return;
-  
-    const handleScrapeStatus = (data: { roomId: string; status: string; message: string }) => {
-      console.log('Received scrape_status:', data, data.message);
-  
-      const msg = (data.message || '').toLowerCase();
-  
-      // 1. Target URL Validated / Queued
-      if(data.status === 'failed') {
-        setAppState('home');
-        setProgressPercent(0);
-        setIngestionSteps(prev => prev.map(s => ({ ...s, status: 'pending' })));
-        alert(`Ingestion failed: ${data.message || 'Unknown error'}`);
-        return;
-      }
 
-      if (data.status === 'queued') {
-        setProgressPercent(25);
-        setIngestionSteps(prev => prev.map(s => {
-          if (s.id === '1') {
-            return { ...s, status: 'completed', detail: data.message || 'Target URL verified' };
-          }
-          if (s.id === '2') {
-            return { ...s, status: 'loading', detail: 'Analyzing site routes...' };
-          }
-          return s;
-        }));
-      }
-  
-      // 2. Analyzing Site Structure & AI Layout
-      if (data.status === 'training_ai_layout' || data.status === 'processing') {
-        setProgressPercent(55);
-        const isFinished = msg.includes('completed') || msg.includes('job is being processed');
-  
-        setIngestionSteps(prev => prev.map(s => {
-          if (s.id === '2') {
-            return {
-              ...s,
-              status: isFinished ? 'completed' : 'loading',
-              detail: data.message || s.detail, // Always updates with backend message
-            };
-          }
-          if (s.id === '3') {
-            return { ...s, status: isFinished ? 'loading' : 'pending' };
-          }
-          return s;
-        }));
-      }
-  
-      // 3. Extracting Data
-      if (data.status === 'extracting_data') {
-        setProgressPercent(75);
-        setIngestionSteps(prev => prev.map(s => {
-          if (s.id === '3') {
-            return { ...s, status: 'loading', detail: data.message || s.detail };
-          }
-          return s;
-        }));
-      }
-  
-      // 4. Completed
-      if (data.status === 'completed') {
-        setProgressPercent(90);
-        setIngestionSteps(prev => prev.map(s => {
-          if (s.id === '3') return { ...s, status: 'completed'  };
-          if (s.id === '4') return { ...s, status: 'loading', detail: data.message || 'Generating vector embeddings...' };
-          return s;
-        }));
-
-        if(data.message && data.message.toLowerCase().includes('successfully ') && data.message.toLowerCase().includes('index')) {  
-          const totalChunked = data.message.match(/\d+/)?.[0] || '0';
+    const {
+      progressPercent,
+      ingestionSteps,
+      indexedPages,
+      startIngestion,
+    } = useIngestion({
+      socket,
+      docUrl,
+      appState,
+      setAppState,
+      onComplete: (pages, totalChunks) => {
+        // Add welcome message when ingestion completes
         setTimeout(() => {
-          setProgressPercent(100);
-          setIngestionSteps(prev => prev.map(s => ({ ...s, status: 'completed' })));
-  
-          const hostname = new URL(docUrl.startsWith('http') ? docUrl : `https://${docUrl}`).hostname;
-          const pages: IndexedPage[] = [
-            { id: 'p1', title: `${hostname} - Overview & Quickstart`, url: `${docUrl}#quickstart`, chunks: 14, extractedAt: 'Just now' },
-            { id: 'p2', title: `${hostname} - API Authentication & Keys`, url: `${docUrl}#auth`, chunks: 22, extractedAt: 'Just now' },
-            { id: 'p3', title: `${hostname} - Endpoints & Payload Schema`, url: `${docUrl}#endpoints`, chunks: 38, extractedAt: 'Just now' },
-            { id: 'p4', title: `${hostname} - Error Codes & Troubleshooting`, url: `${docUrl}#errors`, chunks: 19, extractedAt: 'Just now' }
-          ];
-          setIndexedPages(pages);
-  
-          setTimeout(() => {
-            setAppState('chat');
-            setMessages([
-              {
-                id: 'm-welcome',
-                sender: 'assistant',
-                text: `Index complete! I have processed **${docUrl}** using Bright Data Scraper Studio. ${totalChunked} total chunks vectorized and stored in knowledge context.\n\nYou can now ask any technical or conceptual questions about this documentation.`,
-                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                sources: [
-                  {
-                    title: 'Documentation Root Index',
-                    url: docUrl,
-                    snippet: 'Extracted 4 main navigation sections and 93 sub-content blocks.'
-                  }
-                ]
-              }
-            ]);
-          }, 3000);
-        }, 2000);
-      }
-      }
-    };
-  
-    socket.on('scrape_status', handleScrapeStatus);
-  
-    return () => {
-      socket.off('scrape_status', handleScrapeStatus);
-    };
-  }, [socket, docUrl, appState]);
+                    setAppState('chat');
+                    setMessages([
+                      {
+                        id: 'm-welcome',
+                        sender: 'assistant',
+                        text: `Index complete! I have processed **${docUrl}** using Bright Data Scraper Studio. ${totalChunks} total chunks vectorized and stored in knowledge context.\n\nYou can now ask any technical or conceptual questions about this documentation.`,
+                        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                        sources: [
+                          {
+                            title: 'Documentation Root Index',
+                            url: docUrl,
+                            snippet: 'Extracted 4 main navigation sections and 93 sub-content blocks.'
+                          }
+                        ]
+                      }
+                    ]);
+                  }, 3000);
+      },
+      onError: (msg) => {alert(`Ingestion failed: ${msg}`), setAppState('home')},
+    });
 
-    const handleStartIngestion = async (e?: React.SubmitEvent<HTMLFormElement>) => {
-      if (e) e.preventDefault();
-      if (!docUrl.trim()) return;
-      
-      setAppState('ingesting');
-      setProgressPercent(5);
-  
-      setIngestionSteps([
-        { id: '1', label: 'Validating Target URL', status: 'loading',detail:'Url Validation in progress...' },
-        { id: '2', label: 'Analyzing Site Structure & Routes', status: 'pending' , detail:'Validating... Structure' },
-        { id: '3', label: 'Extracting Markdown Text (Self-Healing Enabled)', detail: 'Scraper Studio Engine active', status: 'pending' },
-        { id: '4', label: 'Chunking & Vectorizing Content', detail: 'Embedding dimensions: 1536', status: 'pending' }
-      ]);
-   
-      // Get the room ID from localStorage (same one used in socket join)
-      const globalRoomId = localStorage.getItem('global_room_id');
-      
-      try {
-        const response = await fetch('http://localhost:4000/api/v1/scrape', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ roomId: globalRoomId , url: docUrl}),
-        });
-    
-        if (!response.ok) {
-          throw new Error(`Server returned status: ${response.status}`);
-        }
-    
-        const data = await response.json();
-        console.log('Ingestion response:', data);
-    
-      } catch (err) {
-        // Catching the network failure safely so the UI doesn't crash
-        console.error('Failed to trigger ingestion endpoint:', err);
-        setAppState('home');
-        return;
-      }
-    };
-  
-    const handleSendMessage = async (e?: React.SubmitEvent<HTMLFormElement>) => {
+
+ const handleSendMessage = async (e?: React.SubmitEvent<HTMLFormElement>) => {
       if (e) e.preventDefault();
     
       const queryText = inputQuery;
@@ -298,7 +168,7 @@ import { useSocket } from "../context/socketcontext";
     const handleResetToHome = () => {
       setAppState('home');
       setMessages([]);
-      setProgressPercent(0);
+      // setProgressPercent(0);
     };
   
     return (
@@ -310,7 +180,7 @@ import { useSocket } from "../context/socketcontext";
             <HeroView 
               docUrl={docUrl}
               setDocUrl={setDocUrl}
-              onSubmit={handleStartIngestion}
+              onSubmit={startIngestion}
               presetUrls={PRESET_URLS}
             />
           )}
@@ -332,7 +202,7 @@ import { useSocket } from "../context/socketcontext";
               setInputQuery={setInputQuery}
               isTyping={isTyping}
               onSendMessage={handleSendMessage}
-              onReindex={handleStartIngestion}
+              onReindex={startIngestion}
             />
           )}
         </main>
