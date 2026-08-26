@@ -36,7 +36,7 @@ import { Globe, ArrowRight, Sparkles, Cpu, ShieldCheck, Database } from 'lucide-
   
         {/* URL Submission Form Box */}
         <form onSubmit={onSubmit} className="w-full max-w-2xl mb-8">
-          <div className="relative flex items-center rounded-2xl bg-white p-2 shadow-xl shadow-slate-200/60 border border-slate-200 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-100 transition-all">
+          <div className="relative flex flex-col sm:flex-row items-center rounded-2xl bg-white p-2 shadow-xl shadow-slate-200/60 border border-slate-200 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-100 transition-all">
             <div className="pl-4 text-slate-400" id="how-it-works">
               <Globe className="w-5 h-5" />
             </div>
