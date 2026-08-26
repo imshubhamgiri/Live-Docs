@@ -45,7 +45,8 @@ import React, { useRef, useEffect } from 'react';
     inputQuery: string;
     setInputQuery: (query: string) => void;
     isTyping: boolean;
-    onSendMessage: (e?: React.FormEvent) => void;
+    bottomRef: React.RefObject<HTMLDivElement>;
+    onSendMessage: (e?: React.SubmitEvent<HTMLFormElement>) => void;
     onReindex: () => void;
   }
   
@@ -56,14 +57,15 @@ import React, { useRef, useEffect } from 'react';
     inputQuery,
     setInputQuery,
     isTyping,
+    bottomRef,
     onSendMessage,
     onReindex,
   }) => {
-    const chatBottomRef = useRef<HTMLDivElement>(null);
+    // const chatBottomRef = useRef<HTMLDivElement>(null);
   
-    useEffect(() => {
-      chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages, isTyping]);
+    // useEffect(() => {
+    //   chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // }, [messages, isTyping]);
   
     return (
       // {/* The page wrapper reserves the navbar row and constrains this flex child
@@ -71,7 +73,7 @@ import React, { useRef, useEffect } from 'react';
       <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden">
       
           {/* LEFT SIDEBAR: INDEXED PAGES & KNOWLEDGE STATUS */}
-          <aside className="w-full md:w-80 bg-white border-r border-slate-200 flex flex-col shrink-0 min-h-0">
+          <aside className="w-full md:w-80 bg-white border-r hidden md:block border-slate-200  flex-col shrink-0 min-h-0">
             {/* min-h-0 added here too — aside is a flex child of the row above,
                 and it's a column flex container for its own children below,
                 so it needs the same "allow me to shrink" permission. */}
@@ -269,7 +271,7 @@ import React, { useRef, useEffect } from 'react';
                 </div>
               )}
       
-              <div ref={chatBottomRef} />
+              <div ref={bottomRef} />
             </div>
       
             {/* Chat Input Bar — added shrink-0 so this bar can never be compressed
