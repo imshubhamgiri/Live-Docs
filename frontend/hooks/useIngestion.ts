@@ -78,8 +78,6 @@ export const useIngestion = ({ socket, docUrl, appState, setAppState, onComplete
         throw new Error(`Server returned status: ${response.status}`);
       }
 
-      const data = await response.json();
-      console.log('Ingestion response:', data);
       // Server will emit 'scrape_status' events; we handle them in the listener below
     } catch (err) {
       console.error('Failed to trigger ingestion:', err);
@@ -93,7 +91,6 @@ export const useIngestion = ({ socket, docUrl, appState, setAppState, onComplete
     if (!socket) return;
 
     const handleScrapeStatus = (data: { roomId: string; status: string; message: string }) => {
-      console.log('Received scrape_status:', data);
 
       // Handle failure
       if (data.status === 'failed') {
